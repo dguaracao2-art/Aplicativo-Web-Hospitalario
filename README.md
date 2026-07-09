@@ -16,4 +16,8 @@ Robin Gabriel Leiton Cabrera
 Danny Ismael Guaraca Orozco
 Anderson Asencio
 Bryan Chimbo
+
+Carrera: Software
+Curso: C1
+
 ...
