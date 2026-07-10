@@ -36,9 +36,10 @@ LOCAL_APPS = [
     "catalog",
     "customers",
     "invoicing",
+    "pacientes",
 ]
 
-INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
+INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS    
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
