@@ -117,3 +117,13 @@ MEDIA_ROOT = BASE_DIR / 'mediafiles'
 LOGIN_URL = "/security/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/security/login/"
+
+# Datos de la organización, usados en encabezados de PDFs y reportes.
+# No requiere migraciones. Se puede sobreescribir por variables de entorno (.env)
+# sin tocar código, útil mientras no exista un modelo de configuración.
+HOSPITAL_INFO = {
+    'nombre': config('HOSPITAL_NOMBRE', default='Aplicativo Web para Registro y Gestión de Pacientes y Consultas Médicas'),
+    'ruc': config('HOSPITAL_RUC', default=''),
+    'direccion': config('HOSPITAL_DIRECCION', default=''),
+    'telefono': config('HOSPITAL_TELEFONO', default=''),
+}
