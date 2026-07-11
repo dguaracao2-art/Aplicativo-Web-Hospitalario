@@ -6,6 +6,12 @@ from django.utils.translation import gettext_lazy as _
 from .managers import CustomUserManager
 
 
+class Rol(models.TextChoices):
+    ADMINISTRADOR = "ADMIN", _("Administrador")
+    MEDICO = "MEDICO", _("Médico")
+    RECEPCIONISTA = "RECEP", _("Recepcionista")
+
+
 class User(AbstractBaseUser, PermissionsMixin):
     pkid = models.BigAutoField(primary_key=True, editable=False)
     id = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
@@ -23,6 +29,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name='Archive Photo',
         max_length=1024,
         blank=True, null=True
+    )
+    rol = models.CharField(
+        _("rol"),
+        max_length=10,
+        choices=Rol.choices,
+        default=Rol.RECEPCIONISTA,
     )
 
     USERNAME_FIELD = "email"

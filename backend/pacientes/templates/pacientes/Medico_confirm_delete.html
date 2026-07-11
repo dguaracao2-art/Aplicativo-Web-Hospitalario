@@ -1,0 +1,13 @@
+{% extends "pacientes/base.html" %}
+{% block title %}Eliminar médico{% endblock %}
+{% block content %}
+<h2>¿Desactivar médico?</h2>
+<p>Estás a punto de desactivar a <strong>{{ object.nombres }} {{ object.apellidos }}</strong>
+(cédula {{ object.cedula }}). El registro no se borra de la base de datos, solo se marca como inactivo.</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Sí, desactivar</button>
+    <a href="{% url 'pacientes:medicos_listar' %}" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "pacientes/base.html" %}
+{% block title %}Detalle del médico{% endblock %}
+{% block content %}
+<h2>Dr(a). {{ medico.nombres }} {{ medico.apellidos }}</h2>
+<table class="table">
+    <tr><th>Cédula</th><td>{{ medico.cedula }}</td></tr>
+    <tr><th>Especialidad</th><td>{{ medico.get_especialidad_display }}</td></tr>
+    <tr><th>Teléfono</th><td>{{ medico.telefono }}</td></tr>
+    <tr><th>Correo</th><td>{{ medico.correo_electronico }}</td></tr>
+    <tr><th>Registrado el</th><td>{{ medico.fecha_registro }}</td></tr>
+</table>
+
+<h4 class="mt-4">Próximas citas</h4>
+<ul class="list-group">
+    {% for cita in medico.citas.all %}
+    <li class="list-group-item">{{ cita.fecha }} {{ cita.hora }} — {{ cita.paciente }} ({{ cita.get_estado_display }})</li>
+    {% empty %}
+    <li class="list-group-item text-muted">Sin citas registradas.</li>
+    {% endfor %}
+</ul>
+
+<a href="{% url 'pacientes:medicos_listar' %}" class="btn btn-secondary mt-3">Volver</a>
+{% endblock %}

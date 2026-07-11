@@ -1,0 +1,16 @@
+{% extends "pacientes/base.html" %}
+{% block title %}Detalle de la cita{% endblock %}
+{% block content %}
+<h2>Detalle de la cita</h2>
+<table class="table">
+    <tr><th>Paciente</th><td>{{ cita.paciente }}</td></tr>
+    <tr><th>Médico</th><td>{{ cita.medico }}</td></tr>
+    <tr><th>Fecha</th><td>{{ cita.fecha }}</td></tr>
+    <tr><th>Hora</th><td>{{ cita.hora }}</td></tr>
+    <tr><th>Motivo</th><td>{{ cita.motivo|default:"—" }}</td></tr>
+    <tr><th>Estado</th><td>{{ cita.get_estado_display }}</td></tr>
+    <tr><th>Registrada el</th><td>{{ cita.fecha_registro }}</td></tr>
+</table>
+
+<a href="{% url 'pacientes:citas_listar' %}" class="btn btn-secondary mt-3">Volver</a>
+{% endblock %}
