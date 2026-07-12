@@ -1,0 +1,24 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Cancelar Cita{% endblock %}
+{% block page_title %}Cancelar Cita{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm" style="max-width:500px">
+  <div class="card-body p-4 text-center">
+    <i class="bi bi-exclamation-triangle text-warning display-5 d-block mb-3"></i>
+    <h5 class="fw-bold mb-2">¿Cancelar esta cita?</h5>
+    <p class="text-muted">
+      Cita del <strong>{{ cita.fecha|date:'d/m/Y' }} a las {{ cita.hora|time:'H:i' }}</strong>
+      entre <strong>{{ cita.paciente.nombres }} {{ cita.paciente.apellidos }}</strong> y
+      <strong>Dr(a). {{ cita.medico.apellidos }}</strong> quedará marcada como cancelada.
+    </p>
+    <form method="post">
+      {% csrf_token %}
+      <div class="d-flex gap-2 justify-content-center mt-3">
+        <button type="submit" class="btn btn-danger"><i class="bi bi-x-circle"></i> Sí, cancelar</button>
+        <a href="{% url 'pacientes:citas_detalle' cita.cita_id %}" class="btn btn-outline-secondary">Volver</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

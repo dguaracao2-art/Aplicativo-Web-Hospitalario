@@ -1,25 +1,40 @@
-{% extends "pacientes/base.html" %}
-{% block title %}Detalle del paciente{% endblock %}
+{% extends "admin/base_admin.html" %}
+{% block title %}{{ paciente.nombres }} {{ paciente.apellidos }}{% endblock %}
+{% block page_title %}Detalle de Paciente{% endblock %}
+
 {% block content %}
-<h2>{{ paciente.nombres }} {{ paciente.apellidos }}</h2>
-<table class="table">
-    <tr><th>Cédula</th><td>{{ paciente.cedula }}</td></tr>
-    <tr><th>Fecha de nacimiento</th><td>{{ paciente.fecha_nacimiento }}</td></tr>
-    <tr><th>Género</th><td>{{ paciente.get_genero_display }}</td></tr>
-    <tr><th>Dirección</th><td>{{ paciente.direccion }}</td></tr>
-    <tr><th>Teléfono</th><td>{{ paciente.telefono }}</td></tr>
-    <tr><th>Correo</th><td>{{ paciente.correo_electronico }}</td></tr>
-    <tr><th>Registrado el</th><td>{{ paciente.fecha_registro }}</td></tr>
-</table>
-
-<h4 class="mt-4">Citas médicas</h4>
-<ul class="list-group">
-    {% for cita in paciente.citas.all %}
-    <li class="list-group-item">{{ cita.fecha }} {{ cita.hora }} — {{ cita.medico }} ({{ cita.get_estado_display }})</li>
-    {% empty %}
-    <li class="list-group-item text-muted">Sin citas registradas.</li>
-    {% endfor %}
-</ul>
-
-<a href="{% url 'pacientes:listar' %}" class="btn btn-secondary mt-3">Volver</a>
+<div class="row g-4">
+  <div class="col-12 col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <div>
+            <h5 class="fw-bold mb-1">{{ paciente.nombres }} {{ paciente.apellidos }}</h5>
+            <span class="text-muted small">Cédula: {{ paciente.cedula }}</span>
+          </div>
+          {% if paciente.estado %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-secondary">Inactivo</span>{% endif %}
+        </div>
+        <hr>
+        <table class="table table-sm table-borderless mb-0">
+          <tr><td class="text-muted" style="width:180px">Fecha de nacimiento</td><td>{{ paciente.fecha_nacimiento|date:'d/m/Y' }}</td></tr>
+          <tr><td class="text-muted">Género</td><td>{{ paciente.get_genero_display }}</td></tr>
+          <tr><td class="text-muted">Teléfono</td><td>{{ paciente.telefono|default:"—" }}</td></tr>
+          <tr><td class="text-muted">Correo</td><td>{{ paciente.correo_electronico|default:"—" }}</td></tr>
+          <tr><td class="text-muted">Dirección</td><td>{{ paciente.direccion|default:"—" }}</td></tr>
+          <tr><td class="text-muted">Registrado</td><td>{{ paciente.fecha_registro|date:'d/m/Y H:i' }}</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <h6 class="fw-bold mb-3">Acciones</h6>
+        <a href="{% url 'pacientes:editar' paciente.paciente_id %}" class="btn btn-primary w-100 mb-2"><i class="bi bi-pencil"></i> Editar</a>
+        <a href="{% url 'pacientes:eliminar' paciente.paciente_id %}" class="btn btn-outline-danger w-100 mb-2"><i class="bi bi-trash"></i> Desactivar</a>
+        <a href="{% url 'pacientes:listar' %}" class="btn btn-outline-secondary w-100">Volver al listado</a>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

@@ -1,21 +1,50 @@
-{% extends "pacientes/base.html" %}
-{% block title %}{{ object|yesno:"Editar,Nuevo" }} médico{% endblock %}
+{% extends "admin/base_admin.html" %}
+{% block title %}{% if object %}Editar{% else %}Nuevo{% endif %} Médico{% endblock %}
+{% block page_title %}{% if object %}Editar Médico{% else %}Nuevo Médico{% endif %}{% endblock %}
+
 {% block content %}
-<h2>{% if object %}Editar médico{% else %}Nuevo médico{% endif %}</h2>
-
-<form method="post" novalidate>
-    {% csrf_token %}
-    {% for field in form %}
-    <div class="mb-3">
-        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
-        {{ field }}
-        {% if field.errors %}
-            <div class="text-danger small">{{ field.errors|striptags }}</div>
-        {% endif %}
-    </div>
-    {% endfor %}
-
-    <button type="submit" class="btn btn-primary">Guardar</button>
-    <a href="{% url 'pacientes:medicos_listar' %}" class="btn btn-secondary">Cancelar</a>
-</form>
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-4">
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+      {% endif %}
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Cédula</label>
+          {{ form.cedula }}
+          {% if form.cedula.errors %}<div class="text-danger small">{{ form.cedula.errors|join:", " }}</div>{% endif %}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Nombres</label>
+          {{ form.nombres }}
+          {% if form.nombres.errors %}<div class="text-danger small">{{ form.nombres.errors|join:", " }}</div>{% endif %}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Apellidos</label>
+          {{ form.apellidos }}
+          {% if form.apellidos.errors %}<div class="text-danger small">{{ form.apellidos.errors|join:", " }}</div>{% endif %}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Especialidad</label>
+          {{ form.especialidad }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Teléfono</label>
+          {{ form.telefono }}
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Correo electrónico</label>
+          {{ form.correo_electronico }}
+          {% if form.correo_electronico.errors %}<div class="text-danger small">{{ form.correo_electronico.errors|join:", " }}</div>{% endif %}
+        </div>
+      </div>
+      <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Guardar</button>
+        <a href="{% url 'pacientes:medicos_listar' %}" class="btn btn-outline-secondary">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
 {% endblock %}

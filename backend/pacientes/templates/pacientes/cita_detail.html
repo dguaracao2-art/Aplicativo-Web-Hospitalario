@@ -1,16 +1,43 @@
-{% extends "pacientes/base.html" %}
-{% block title %}Detalle de la cita{% endblock %}
-{% block content %}
-<h2>Detalle de la cita</h2>
-<table class="table">
-    <tr><th>Paciente</th><td>{{ cita.paciente }}</td></tr>
-    <tr><th>Médico</th><td>{{ cita.medico }}</td></tr>
-    <tr><th>Fecha</th><td>{{ cita.fecha }}</td></tr>
-    <tr><th>Hora</th><td>{{ cita.hora }}</td></tr>
-    <tr><th>Motivo</th><td>{{ cita.motivo|default:"—" }}</td></tr>
-    <tr><th>Estado</th><td>{{ cita.get_estado_display }}</td></tr>
-    <tr><th>Registrada el</th><td>{{ cita.fecha_registro }}</td></tr>
-</table>
+{% extends "admin/base_admin.html" %}
+{% block title %}Cita {{ cita.fecha|date:'d/m/Y' }}{% endblock %}
+{% block page_title %}Detalle de Cita{% endblock %}
 
-<a href="{% url 'pacientes:citas_listar' %}" class="btn btn-secondary mt-3">Volver</a>
+{% block content %}
+<div class="row g-4">
+  <div class="col-12 col-lg-8">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <h5 class="fw-bold mb-1">{{ cita.fecha|date:'l, d \d\e F \d\e Y' }} — {{ cita.hora|time:'H:i' }}</h5>
+          {% if cita.estado == 'PRO' %}<span class="badge bg-primary">Programada</span>
+          {% elif cita.estado == 'ATE' %}<span class="badge bg-success">Atendida</span>
+          {% else %}<span class="badge bg-secondary">Cancelada</span>{% endif %}
+        </div>
+        <hr>
+        <table class="table table-sm table-borderless mb-0">
+          <tr><td class="text-muted" style="width:180px">Paciente</td><td>{{ cita.paciente.nombres }} {{ cita.paciente.apellidos }} ({{ cita.paciente.cedula }})</td></tr>
+          <tr><td class="text-muted">Médico</td><td>Dr(a). {{ cita.medico.nombres }} {{ cita.medico.apellidos }} — {{ cita.medico.get_especialidad_display }}</td></tr>
+          <tr><td class="text-muted">Motivo</td><td>{{ cita.motivo|default:"—" }}</td></tr>
+          <tr><td class="text-muted">Registrada</td><td>{{ cita.fecha_registro|date:'d/m/Y H:i' }}</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4">
+        <h6 class="fw-bold mb-3">Acciones</h6>
+        {% if cita.estado == 'PRO' %}
+        <a href="{% url 'pacientes:citas_editar' cita.cita_id %}" class="btn btn-primary w-100 mb-2"><i class="bi bi-pencil"></i> Reprogramar</a>
+        <a href="{% url 'pacientes:citas_cancelar' cita.cita_id %}" class="btn btn-outline-danger w-100 mb-2"><i class="bi bi-x-circle"></i> Cancelar</a>
+        {% else %}
+        <span class="badge {% if cita.estado == 'ATE' %}bg-success{% else %}bg-secondary{% endif %} d-block p-2 text-center mb-2">
+          {{ cita.get_estado_display }}
+        </span>
+        {% endif %}
+        <a href="{% url 'pacientes:citas_listar' %}" class="btn btn-outline-secondary w-100">Volver al listado</a>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
