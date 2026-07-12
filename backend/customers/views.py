@@ -1,10 +1,13 @@
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import Q
+from django.http import JsonResponse
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import CreateView, ListView, UpdateView
+from pacientes.models import Paciente
 from .forms import ClienteForm
 from .models import Cliente
 
@@ -55,3 +58,29 @@ class ClienteDeactivateView(PermissionRequiredMixin, View):
         c.soft_delete()
         messages.success(request, f'Cliente "{c.nombre}" desactivado.')
         return redirect('customers:cliente_list')
+
+
+@login_required
+def api_pacientes(request):
+    q = request.GET.get('q', '').strip()
+    qs = Paciente.objects.filter(estado=True)
+
+    if q:
+        qs = qs.filter(
+            Q(nombres__icontains=q) |
+            Q(apellidos__icontains=q) |
+            Q(cedula__icontains=q)
+        )
+
+    data = list(
+        qs.values(
+            'paciente_id',
+            'cedula',
+            'nombres',
+            'apellidos',
+            'telefono',
+            'correo_electronico',
+        )[:20]
+    )
+
+    return JsonResponse(data, safe=False)

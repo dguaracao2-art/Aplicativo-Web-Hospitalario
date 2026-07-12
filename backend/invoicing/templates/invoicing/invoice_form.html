@@ -77,8 +77,28 @@
 <script src="{% static 'invoicing/js/invoice-service.js' %}"></script>
 <script src="{% static 'invoicing/js/invoice-form.js' %}"></script>
 <script>
+// Si el usuario vuelve con "atrás" desde el navegador después de guardar,
+// recarga la página en vez de dejar el formulario ya usado (evita factura duplicada)
+window.addEventListener('pageshow', function (event) {
+  if (event.persisted) {
+    window.location.reload();
+  }
+});
+
 document.getElementById('btnSubmit')?.addEventListener('click', function() {
   this.classList.add('skeleton-btn');
+  const btn = this;
+  // Se deshabilita un instante después del click, para no interferir
+  // con la validación que hace invoice-form.js antes de enviar
+  setTimeout(function () {
+    btn.disabled = true;
+  }, 50);
+  // Si la validación falla y el usuario sigue en la misma página
+  // (no navegó a invoice_detail), se vuelve a habilitar el botón
+  setTimeout(function () {
+    btn.disabled = false;
+    btn.classList.remove('skeleton-btn');
+  }, 4000);
 });
 </script>
 {% endblock %}

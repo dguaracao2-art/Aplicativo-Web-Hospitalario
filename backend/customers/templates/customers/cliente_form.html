@@ -4,6 +4,25 @@
 {% block content %}
 <div class="card border-0 shadow-sm" style="max-width:600px">
   <div class="card-body p-4">
+
+    {% if not object %}
+    <div class="mb-4">
+      <label class="form-label fw-semibold">
+        <i class="bi bi-search me-1"></i>Buscar paciente existente (opcional)
+      </label>
+      <input type="text" id="searchPaciente" class="form-control"
+             placeholder="Buscar por nombre, apellido o cédula...">
+      <div id="resultsPaciente" class="list-group mt-2" style="max-height:200px;overflow-y:auto"></div>
+      <div id="pacienteLinked" class="alert alert-success d-none mt-2 py-2 px-3 small mb-0">
+        <i class="bi bi-check-circle me-1"></i>
+        Datos autocompletados desde <strong><span id="pacienteLinkedNombre"></span></strong>.
+        <a href="#" id="unlinkPaciente" class="float-end text-decoration-none">Quitar</a>
+      </div>
+      <div class="form-text">Si el cliente ya es un paciente registrado, búscalo aquí para no volver a escribir sus datos.</div>
+    </div>
+    <hr class="mb-4">
+    {% endif %}
+
     <form method="post">{% csrf_token %}
       {% for f in form %}<div class="mb-3"><label class="form-label fw-semibold">{{ f.label }}</label>{{ f }}{% for e in f.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</div>{% endfor %}
       <button type="submit" id="btnSubmit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Guardar</button>
@@ -18,5 +37,70 @@
 document.getElementById('btnSubmit')?.addEventListener('click', function() {
   this.classList.add('skeleton-btn');
 });
+
+(function () {
+  const searchInput = document.getElementById('searchPaciente');
+  if (!searchInput) return; // no aplica en edición
+
+  const results = document.getElementById('resultsPaciente');
+  const linkedBox = document.getElementById('pacienteLinked');
+  const linkedNombre = document.getElementById('pacienteLinkedNombre');
+  const unlinkBtn = document.getElementById('unlinkPaciente');
+
+  const fields = {
+    paciente: document.getElementById('id_paciente'),
+    cedula: document.getElementById('id_cedula'),
+    nombre: document.getElementById('id_nombre'),
+    email: document.getElementById('id_email'),
+    telefono: document.getElementById('id_telefono'),
+  };
+
+  let timeout;
+  searchInput.addEventListener('input', function () {
+    clearTimeout(timeout);
+    const q = this.value.trim();
+    if (q.length < 2) { results.innerHTML = ''; return; }
+    timeout = setTimeout(async () => {
+      try {
+        const resp = await fetch(`/customers/api/pacientes/?q=${encodeURIComponent(q)}`);
+        if (!resp.ok) throw new Error('Error al buscar pacientes');
+        const data = await resp.json();
+        results.innerHTML = data.map(p => `
+          <a href="#" class="list-group-item list-group-item-action" data-id="${p.paciente_id}">
+            <strong>${p.nombres} ${p.apellidos}</strong>
+            <span class="text-muted small d-block">Cédula: ${p.cedula}</span>
+          </a>
+        `).join('') || '<div class="text-muted small p-2">Sin resultados.</div>';
+
+        results.querySelectorAll('a').forEach(a => {
+          a.addEventListener('click', function (e) {
+            e.preventDefault();
+            const p = data.find(x => x.paciente_id == this.dataset.id);
+            if (!p) return;
+
+            fields.paciente.value = p.paciente_id;
+            fields.cedula.value = p.cedula;
+            fields.nombre.value = `${p.nombres} ${p.apellidos}`;
+            fields.email.value = p.correo_electronico || '';
+            fields.telefono.value = p.telefono || '';
+
+            linkedNombre.textContent = `${p.nombres} ${p.apellidos}`;
+            linkedBox.classList.remove('d-none');
+            results.innerHTML = '';
+            searchInput.value = '';
+          });
+        });
+      } catch (err) {
+        results.innerHTML = '<div class="text-danger small p-2">No se pudo buscar. Intenta de nuevo.</div>';
+      }
+    }, 300);
+  });
+
+  unlinkBtn?.addEventListener('click', function (e) {
+    e.preventDefault();
+    fields.paciente.value = '';
+    linkedBox.classList.add('d-none');
+  });
+})();
 </script>
 {% endblock %}

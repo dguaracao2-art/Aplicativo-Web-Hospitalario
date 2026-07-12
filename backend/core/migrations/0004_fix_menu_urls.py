@@ -16,7 +16,7 @@ FIXES = {
 def fix_menu_urls(apps, schema_editor):
     MenuItem = apps.get_model('core', 'MenuItem')
     for (padre, hijo), url_name in FIXES.items():
-        MenuItem.all_objects.filter(
+        MenuItem.objects.filter(
             name=hijo, parent__name=padre, parent__isnull=False
         ).update(url_name=url_name)
 
@@ -24,7 +24,7 @@ def fix_menu_urls(apps, schema_editor):
 def reverse_fix(apps, schema_editor):
     MenuItem = apps.get_model('core', 'MenuItem')
     for (padre, hijo), _ in FIXES.items():
-        MenuItem.all_objects.filter(
+        MenuItem.objects.filter(
             name=hijo, parent__name=padre, parent__isnull=False
         ).update(url_name='')
 
