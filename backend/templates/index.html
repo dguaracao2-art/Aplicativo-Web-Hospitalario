@@ -7,42 +7,67 @@
 {% block content %}
 <!-- Accesos rápidos -->
 <div class="d-flex gap-2 mb-4 flex-wrap">
-  <a href="{% url 'invoicing:invoice_create' %}" class="btn btn-primary">
+  <a href="{% url 'pacientes:crear' %}" class="btn btn-primary">
+    <i class="bi bi-person-plus"></i> Nuevo Paciente
+  </a>
+  <a href="{% url 'pacientes:citas_crear' %}" class="btn btn-outline-primary">
+    <i class="bi bi-calendar-plus"></i> Agendar Cita
+  </a>
+  <a href="{% url 'invoicing:invoice_create' %}" class="btn btn-outline-primary">
     <i class="bi bi-plus-circle"></i> Nueva Factura
-  </a>
-  <a href="{% url 'catalog:producto_list' %}" class="btn btn-outline-primary">
-    <i class="bi bi-box"></i> Catálogo
-  </a>
-  <a href="{% url 'customers:cliente_list' %}" class="btn btn-outline-primary">
-    <i class="bi bi-people"></i> Clientes
   </a>
 </div>
 
-<!-- Tarjetas de resumen -->
+<!-- Tarjetas hospitalarias -->
+<div class="row g-3 mb-3">
+  <div class="col-6 col-md-4">
+    <div class="card border-0 shadow-sm text-center p-3 h-100">
+      <i class="bi bi-people fs-2 text-primary d-block"></i>
+      <div class="fw-bold fs-4 mt-1">{{ total_pacientes }}</div>
+      <small class="text-muted">Pacientes Registrados</small>
+    </div>
+  </div>
+  <div class="col-6 col-md-4">
+    <div class="card border-0 shadow-sm text-center p-3 h-100">
+      <i class="bi bi-calendar-check fs-2 text-info d-block"></i>
+      <div class="fw-bold fs-4 mt-1">{{ consultas_hoy }}</div>
+      <small class="text-muted">Consultas Hoy</small>
+    </div>
+  </div>
+  <div class="col-6 col-md-4">
+    <div class="card border-0 shadow-sm text-center p-3 h-100">
+      <i class="bi bi-hourglass-split fs-2 text-warning d-block"></i>
+      <div class="fw-bold fs-4 mt-1">{{ citas_pendientes }}</div>
+      <small class="text-muted">Citas Pendientes</small>
+    </div>
+  </div>
+</div>
+
+<!-- Tarjetas de facturación -->
 <div class="row g-3 mb-4">
   <div class="col-6 col-md-3">
-    <div class="card border-0 shadow-sm text-center p-3 h-100 skeleton-card">
+    <div class="card border-0 shadow-sm text-center p-3 h-100">
       <i class="bi bi-receipt fs-2 text-primary d-block"></i>
       <div class="fw-bold fs-4 mt-1">{{ facturas_hoy }}</div>
       <small class="text-muted">Facturas Hoy</small>
     </div>
   </div>
   <div class="col-6 col-md-3">
-    <div class="card border-0 shadow-sm text-center p-3 h-100 skeleton-card">
+    <div class="card border-0 shadow-sm text-center p-3 h-100">
       <i class="bi bi-currency-dollar fs-2 text-success d-block"></i>
       <div class="fw-bold fs-4 mt-1">${{ ventas_mes|floatformat:0 }}</div>
       <small class="text-muted">Ventas del Mes</small>
     </div>
   </div>
   <div class="col-6 col-md-3">
-    <div class="card border-0 shadow-sm text-center p-3 h-100 skeleton-card">
-      <i class="bi bi-people fs-2 text-info d-block"></i>
+    <div class="card border-0 shadow-sm text-center p-3 h-100">
+      <i class="bi bi-person-vcard fs-2 text-info d-block"></i>
       <div class="fw-bold fs-4 mt-1">{{ total_clientes }}</div>
       <small class="text-muted">Clientes</small>
     </div>
   </div>
   <div class="col-6 col-md-3">
-    <div class="card border-0 shadow-sm text-center p-3 h-100 skeleton-card">
+    <div class="card border-0 shadow-sm text-center p-3 h-100">
       <i class="bi bi-exclamation-triangle fs-2 text-warning d-block"></i>
       <div class="fw-bold fs-4 mt-1">{{ stock_bajo }}</div>
       <small class="text-muted">Stock Bajo</small>
@@ -52,7 +77,7 @@
 
 <div class="row g-4">
   <!-- Gráfico de ventas -->
-  <div class="col-12 col-lg-8">
+  <div class="col-12 col-lg-7">
     <div class="card border-0 shadow-sm">
       <div class="card-body p-4">
         <h6 class="fw-bold mb-3"><i class="bi bi-graph-up me-2"></i>Ventas Últimos 7 Días</h6>
@@ -61,8 +86,35 @@
     </div>
   </div>
 
+  <!-- Próximas citas -->
+  <div class="col-12 col-lg-5">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body p-4">
+        <h6 class="fw-bold mb-3"><i class="bi bi-calendar-week me-2"></i>Próximas Citas</h6>
+        {% for c in proximas_citas %}
+        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+          <div>
+            <a href="{% url 'pacientes:citas_detalle' c.cita_id %}" class="text-decoration-none fw-semibold small">
+              {{ c.paciente.nombres }} {{ c.paciente.apellidos }}
+            </a>
+            <div class="small text-muted">Dr(a). {{ c.medico.apellidos }}</div>
+          </div>
+          <div class="text-end">
+            <span class="fw-bold small">{{ c.fecha|date:'d/m' }}</span>
+            <div class="small text-muted">{{ c.hora|time:'H:i' }}</div>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-muted small text-center py-3">No hay citas próximas.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4 mt-1">
   <!-- Últimas facturas -->
-  <div class="col-12 col-lg-4">
+  <div class="col-12">
     <div class="card border-0 shadow-sm">
       <div class="card-body p-4">
         <h6 class="fw-bold mb-3"><i class="bi bi-clock-history me-2"></i>Últimas Facturas</h6>

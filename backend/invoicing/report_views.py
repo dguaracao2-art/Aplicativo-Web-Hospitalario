@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.views import View
 from django.views.generic import TemplateView
 from xhtml2pdf import pisa
+from django.conf import settings
 from .models import Factura
 
 
@@ -16,6 +17,7 @@ class PDFMixin:
     pdf_filename = 'reporte.pdf'
 
     def render_pdf(self, context):
+        context.setdefault('empresa', settings.HOSPITAL_INFO)
         html_str = self.render_to_string(self.pdf_template, context)
         result = BytesIO()
         pdf = pisa.pisaDocument(
@@ -143,4 +145,23 @@ class InvoiceListPDFView(LoginRequiredMixin, PermissionRequiredMixin, View, PDFM
             'anuladas': facturas.filter(is_active=False).count(),
             'desde': inicio.date(),
             'hasta': (fin - timedelta(days=1)).date(),
+        })
+
+
+class InvoicePDFView(LoginRequiredMixin, PermissionRequiredMixin, View, PDFMixin):
+    """Genera el PDF individual de una factura (reutiliza PDFMixin, sin duplicar lógica)."""
+    permission_required = 'invoicing.view_factura'
+    pdf_template = 'invoicing/reports/invoice_detail_pdf.html'
+
+    def get(self, request, pk):
+        factura = get_object_or_404(
+            Factura.all_objects.select_related('cliente', 'usuario'), pk=pk
+        )
+        detalles = factura.detalles.select_related('producto').all()
+
+        self.pdf_filename = f'{factura.numero}.pdf'
+
+        return self.render_pdf({
+            'factura': factura,
+            'detalles': detalles,
         })

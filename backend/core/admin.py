@@ -18,3 +18,8 @@ class MenuItemAdmin(admin.ModelAdmin):
 
     def get_queryset(self, request):
         return MenuItem.all_objects.all()
+
+    def has_module_permission(self, request):
+        # Configuración técnica del sidebar: solo superusuarios la gestionan
+        # desde el admin. El resto del equipo no necesita verla aquí.
+        return request.user.is_superuser

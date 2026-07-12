@@ -6,6 +6,7 @@ from django.views.generic import TemplateView
 from catalog.models import Producto
 from customers.models import Cliente
 from invoicing.models import Factura
+from pacientes.models import Paciente, Cita
 
 
 class DashboardView(TemplateView):
@@ -16,6 +17,16 @@ class DashboardView(TemplateView):
         hoy = timezone.now().date()
         inicio_mes = hoy.replace(day=1)
 
+        # --- Estadísticas hospitalarias ---
+        ctx['total_pacientes'] = Paciente.objects.filter(estado=True).count()
+        ctx['consultas_hoy'] = Cita.objects.filter(fecha=hoy).count()
+        ctx['citas_pendientes'] = Cita.objects.filter(estado='PRO', fecha__gte=hoy).count()
+
+        ctx['proximas_citas'] = Cita.objects.select_related('paciente', 'medico').filter(
+            estado='PRO', fecha__gte=hoy
+        ).order_by('fecha', 'hora')[:5]
+
+        # --- Estadísticas de facturación (ya existentes, sin cambios) ---
         ctx['facturas_hoy'] = Factura.objects.filter(
             fecha_emision__date=hoy, is_active=True
         ).count()

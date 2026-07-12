@@ -1,80 +1,89 @@
-{% extends "admin/base_admin.html" %}
-{% block title %}Factura {{ factura.numero }}{% endblock %}
-{% block page_title %}Factura {{ factura.numero }}{% endblock %}
-
-{% block content %}
-<div class="row g-4">
-  <div class="col-12 col-lg-8">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body p-4">
-        <div class="d-flex justify-content-between mb-4">
-          <div>
-            <h5 class="fw-bold mb-1">Sistema de Facturación</h5>
-            <p class="text-muted small mb-0">Factura {{ factura.numero }}</p>
-          </div>
-          <div class="text-end">
-            <p class="mb-0 small">Fecha: {{ factura.fecha_emision|date:'d/m/Y H:i' }}</p>
-            <p class="mb-0 small">Vendedor: {{ factura.usuario.get_full_name }}</p>
-          </div>
-        </div>
-        <hr>
-        <p><strong>Cliente:</strong> {{ factura.cliente.nombre }}<br>
-        <span class="small text-muted">{{ factura.cliente.cedula }} | {{ factura.cliente.email }}</span></p>
-        <hr>
-        <table class="table table-sm">
-          <thead><tr><th>Producto</th><th>Cant.</th><th>P/U</th><th>Desc.%</th><th>Subtotal</th><th>IVA</th><th>Total</th></tr></thead>
-          <tbody>
-            {% for d in detalles %}
-            <tr>
-              <td>{{ d.producto.nombre }}</td>
-              <td>{{ d.cantidad }}</td>
-              <td>${{ d.precio_unitario|floatformat:2 }}</td>
-              <td>{{ d.descuento_pct|floatformat:1 }}%</td>
-              <td>${{ d.subtotal|floatformat:2 }}</td>
-              <td>${{ d.iva_valor|floatformat:2 }}</td>
-              <td>${{ d.total|floatformat:2 }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-        <hr>
-        <div class="text-end">
-          <p>Subtotal: ${{ factura.subtotal|floatformat:2 }}</p>
-          <p>IVA {{ factura.iva_total|floatformat:2 }}</p>
-          <h4 class="fw-bold">TOTAL: ${{ factura.total|floatformat:2 }}</h4>
-        </div>
-        {% if factura.observaciones %}<hr><p class="small text-muted">{{ factura.observaciones }}</p>{% endif %}
-      </div>
-    </div>
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Factura {{ factura.numero }}</title>
+  <link href="{% static 'invoicing/css/invoice-pdf.css' %}" rel="stylesheet">
+</head>
+<body>
+  <div class="brand-header">
+    <h1>{{ empresa.nombre }}</h1>
+    <div class="brand-sub">SISTEMA DE FACTURACION</div>
+    <div class="brand-meta">RUC: {{ empresa.ruc }} | {{ empresa.direccion }} | Tel: {{ empresa.telefono }}</div>
   </div>
-  <div class="col-12 col-lg-4">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body p-4">
-        <h6 class="fw-bold mb-3">Acciones</h6>
-        <a href="{% url 'invoicing:invoice_pdf' factura.pk %}" class="btn btn-primary w-100 mb-2" target="_blank">
-  <i class="bi bi-file-earmark-pdf"></i> Descargar PDF
-</a>
-        {% if factura.is_active %}
-        <form method="post" action="{% url 'invoicing:invoice_annul' factura.pk %}">
-          {% csrf_token %}
-          <button type="submit" id="btnSubmit" class="btn btn-danger w-100" onclick="return confirm('¿Anular esta factura? El stock se restaurará.')">
-            <i class="bi bi-x-circle"></i> Anular Factura
-          </button>
-        </form>
-        {% else %}
-        <span class="badge bg-danger d-block p-2 text-center">Factura Anulada</span>
-        {% endif %}
-        <a href="{% url 'invoicing:invoice_list' %}" class="btn btn-outline-secondary w-100 mt-2">Volver al listado</a>
-      </div>
-    </div>
-  </div>
-</div>
-{% endblock %}
 
-{% block extra_scripts %}
-<script>
-document.getElementById('btnSubmit')?.addEventListener('click', function() {
-  this.classList.add('skeleton-btn');
-});
-</script>
-{% endblock %}
+  <div class="report-title">
+    <h2>Factura {{ factura.numero }}</h2>
+    <p class="period">
+      {{ factura.fecha_emision|date:'l, d \d\e F \d\e Y H:i' }}
+      &nbsp;
+      {% if factura.is_active %}<span class="badge badge-success">ACTIVA</span>{% else %}<span class="badge badge-danger">ANULADA</span>{% endif %}
+    </p>
+  </div>
+
+  <table class="nogrid" style="width:100%;border:none;border-collapse:collapse;margin-bottom:14px;">
+    <tr>
+      <td style="width:50%;border:none;padding:0 8px 0 0;vertical-align:top;">
+        <div class="section-title" style="margin-top:0;">Cliente</div>
+        <p style="margin:2px 0;font-size:9px;"><span class="fw-bold">{{ factura.cliente.nombre }}</span></p>
+        <p style="margin:2px 0;font-size:9px;color:#64748b;">Cedula/RUC: {{ factura.cliente.cedula }}</p>
+        <p style="margin:2px 0;font-size:9px;color:#64748b;">{{ factura.cliente.email }}</p>
+      </td>
+      <td style="width:50%;border:none;padding:0 0 0 8px;vertical-align:top;">
+        <div class="section-title" style="margin-top:0;">Datos de Factura</div>
+        <p style="margin:2px 0;font-size:9px;">Vendedor: <span class="fw-bold">{{ factura.usuario.get_full_name }}</span></p>
+        <p style="margin:2px 0;font-size:9px;color:#64748b;">Metodo de pago: {{ factura.metodo_pago }}</p>
+        <p style="margin:2px 0;font-size:9px;color:#64748b;">Fecha emision: {{ factura.fecha_emision|date:'d/m/Y H:i' }}</p>
+      </td>
+    </tr>
+  </table>
+
+  <div class="section-title">Detalle de Productos</div>
+  <table class="data" border="1">
+    <thead>
+      <tr>
+        <th style="padding:5px 10px;">Producto</th>
+        <th style="padding:5px 10px;text-align:center;">Cant.</th>
+        <th style="padding:5px 10px;text-align:right;">P/U</th>
+        <th style="padding:5px 10px;text-align:right;">Desc.%</th>
+        <th style="padding:5px 10px;text-align:right;">Subtotal</th>
+        <th style="padding:5px 10px;text-align:right;">IVA</th>
+        <th style="padding:5px 10px;text-align:right;">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in detalles %}
+      <tr>
+        <td style="padding:4px 10px;">{{ d.producto.nombre }}</td>
+        <td style="padding:4px 10px;text-align:center;">{{ d.cantidad }}</td>
+        <td style="padding:4px 10px;text-align:right;">${{ d.precio_unitario|floatformat:2 }}</td>
+        <td style="padding:4px 10px;text-align:right;">{{ d.descuento_pct|floatformat:1 }}%</td>
+        <td style="padding:4px 10px;text-align:right;">${{ d.subtotal|floatformat:2 }}</td>
+        <td style="padding:4px 10px;text-align:right;">${{ d.iva_valor|floatformat:2 }}</td>
+        <td style="padding:4px 10px;text-align:right;font-weight:700;">${{ d.total|floatformat:2 }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7" style="padding:20px;text-align:center;color:#94a3b8;">Sin productos registrados.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <div class="totals-box">
+    <div class="line">Subtotal: ${{ factura.subtotal|floatformat:2 }}</div>
+    <div class="line">IVA: ${{ factura.iva_total|floatformat:2 }}</div>
+    <div class="line total">TOTAL: <span>${{ factura.total|floatformat:2 }}</span></div>
+  </div>
+
+  {% if factura.observaciones %}
+  <div class="section-title">Observaciones</div>
+  <p style="font-size:9px;color:#475569;font-style:italic;">{{ factura.observaciones }}</p>
+  {% endif %}
+
+  <div class="report-footer">
+    <p class="footer-brand">SIF — Sistema de Facturacion</p>
+    <p>Documento generado el {% now "d/m/Y \a \l\a\s H:i" %}</p>
+    <p>Este documento es un comprobante de venta de uso administrativo.</p>
+  </div>
+</body>
+</html>

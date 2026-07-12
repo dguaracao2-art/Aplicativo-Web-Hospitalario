@@ -8,9 +8,9 @@
 </head>
 <body>
   <div class="brand-header">
-    <h1>Comercial "El Porvenir"</h1>
-    <div class="brand-sub">SISTEMA DE FACTURACION</div>
-    <div class="brand-meta">RUC: 1799999999001 | Av. Principal s/n | Tel: 0999999999</div>
+    <h1>{{ empresa.nombre }}</h1>
+    <div class="brand-sub">SISTEMA DE GESTION</div>
+    <div class="brand-meta">RUC: {{ empresa.ruc }} | {{ empresa.direccion }} | Tel: {{ empresa.telefono }}</div>
   </div>
 
   <div class="report-title">
@@ -73,7 +73,7 @@
   {% endif %}
 
   <div class="report-footer">
-    <p class="footer-brand">SIF — Sistema de Facturacion</p>
+    <p class="footer-brand">{{ empresa.nombre }}</p>
     <p>Documento generado el {% now "d/m/Y \a \l\a\s H:i" %}</p>
     <p>Este documento es un reporte interno de uso administrativo.</p>
   </div>

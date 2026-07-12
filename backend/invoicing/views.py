@@ -3,6 +3,7 @@ from catalog.models import Producto
 from customers.models import Cliente
 import json
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -87,7 +88,9 @@ class InvoiceAnnulView(PermissionRequiredMixin, View):
         except Exception as e:
             messages.error(request, str(e))
         return redirect('invoicing:invoice_list')
-    
+
+
+@login_required
 def api_productos(request):
     q = request.GET.get('q', '').strip()
     qs = Producto.objects.filter(is_active=True)
@@ -112,6 +115,7 @@ def api_productos(request):
     return JsonResponse(data, safe=False)
 
 
+@login_required
 def api_clientes(request):
     q = request.GET.get('q', '').strip()
     qs = Cliente.objects.filter(is_active=True)

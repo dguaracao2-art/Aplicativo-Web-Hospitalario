@@ -1,7 +1,13 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import Group
 from django.utils.translation import gettext_lazy as _
 from .models import User
+
+# Ya existe una UI propia para grupos (security:group_list, security:group_create),
+# así que se retira del admin de Django para evitar dos lugares distintos
+# gestionando lo mismo (fuente única de verdad).
+admin.site.unregister(Group)
 
 
 @admin.register(User)
