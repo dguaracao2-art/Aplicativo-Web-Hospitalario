@@ -1,0 +1,75 @@
+@startuml
+title Arquitectura MVT del Aplicativo Web Hospitalario
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+
+actor Usuario
+
+package "Presentación (Templates)" {
+    [Dashboard]
+    [Pacientes]
+    [Médicos]
+    [Citas]
+    [Facturación]
+    [Login]
+}
+
+package "Views" {
+    [DashboardView]
+    [PacienteView]
+    [MedicoView]
+    [CitaView]
+    [FacturaView]
+    [LoginView]
+}
+
+package "Models" {
+    [Paciente]
+    [Medico]
+    [Cita]
+    [Cliente]
+    [Factura]
+    [Producto]
+    [User]
+}
+
+database MySQL
+
+Usuario --> Dashboard
+
+Dashboard --> DashboardView
+Pacientes --> PacienteView
+Médicos --> MedicoView
+Citas --> CitaView
+Facturación --> FacturaView
+Login --> LoginView
+
+DashboardView --> Paciente
+DashboardView --> Cita
+DashboardView --> Factura
+
+PacienteView --> Paciente
+PacienteView --> Cliente
+
+MedicoView --> Medico
+
+CitaView --> Cita
+CitaView --> Medico
+CitaView --> Paciente
+
+FacturaView --> Factura
+FacturaView --> Cliente
+FacturaView --> Producto
+
+LoginView --> User
+
+Paciente --> MySQL
+Medico --> MySQL
+Cita --> MySQL
+Cliente --> MySQL
+Factura --> MySQL
+Producto --> MySQL
+User --> MySQL
+
+@enduml
