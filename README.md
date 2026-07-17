@@ -1,82 +1,53 @@
-# POO-4TO-CURSO-DJANGO-POSTGRES-REACT
+Aplicativo Web para Registro y Gestión de Pacientes y Consultas Médicas
 
-Laboratorio de **Programación Orientada a Objetos (4to curso)** — aplicación web con Django + MySQL + Bootstrap 5.
+Integrantes
 
-## Stack
 
-| Capa | Tecnología |
-|---|---|
-| Backend | Django 6.0.6 · django-cors-headers |
-| Frontend | Django Templates · Bootstrap 5 · JavaScript ES6 · Axios |
-| Base de datos | MySQL 8 / MariaDB 10 (configurable por `.env`) |
-| Lenguajes | Python 3.12 |
+Robin Gabriel Leiton Cabrera
+Anderson Alfredo Asencio Inga
+Danny Ismael Guaraca Orozco
+Bryan David Chimbo Pezo
 
-> **Nota:** El nombre del repositorio incluye "POSTGRES" por razones históricas. El proyecto actual usa MySQL.
-| Documentación | PlantUML (diagramas UML) |
 
-## Estructura del repositorio
+Carrera y Semestre
 
-```
-.
-├── backend/         # servidor Django
-├── frontend/        # (reservado para frontend futuro)
-├── docs/
-│   ├── ROADMAP.md
-│   ├── user-stories.md
-│   ├── diseno-facturacion.md
-│   ├── guia-laboratorio-01.md
-│   ├── guia-laboratorio-02.md
-│   ├── guia-laboratorio-03.md
-│   ├── guia-laboratorio-03b.md
-│   ├── guia-laboratorio-04.md
-│   ├── guia-laboratorio-05.md
-│   ├── caso-estudio-facturacion-analisis.md
-│   ├── caso-estudio-facturacion-implementacion.md
-│   ├── referencias-django.md
-│   └── uml/         # diagramas PlantUML
-└── scripts/         # automatización opcional
-```
+Carrera: Ingeniería en Software
+Semestre: Cuarto Semestre
 
-## Guías de laboratorio
+Descripción del Proyecto
 
-| # | Guía | Estado |
-|---|---|---|
-| [01](./docs/guia-laboratorio-01.md) | **Configuración base y proyecto Django** | ✅ Implementado |
-| [02](./docs/guia-laboratorio-02.md) | **App Security (User, Login, Admin)** | ✅ Implementado |
-| [03](./docs/guia-laboratorio-03.md) | **Diagramas UML** | ✅ Implementado |
-| [03b](./docs/guia-laboratorio-03b.md) | **Login Profesional (Bootstrap + Axios + SOLID)** | ✅ Implementado |
-| [04](./docs/guia-laboratorio-04.md) | **App Core (BaseModel + MenuItem + SoftDelete)** | 📄 Pendiente |
-| [05](./docs/guia-laboratorio-05.md) | **Panel Administrativo (Sidebar + Layout + Tags)** | 📄 Pendiente |
-| [06](./docs/guia-laboratorio-06.md) | **CRUD Usuarios + Roles (CBVs, búsqueda, paginación)** | 📄 Pendiente |
-| [07](./docs/guia-laboratorio-07.md) | **CRUD Catálogo (Categorías + Productos)** | 📄 Pendiente |
-| [08](./docs/guia-laboratorio-08.md) | **CRUD Clientes (búsqueda, validación única)** | 📄 Pendiente |
-| [09](./docs/guia-laboratorio-09.md) | **Facturación ACID (maestro-detalle, F(), IVA)** | 📄 Pendiente |
-| [10](./docs/guia-laboratorio-10.md) | **Dashboard + Reportes (Chart.js)** | 📄 Pendiente |
-| [11](./docs/guia-laboratorio-11.md) | **Verificación Final + Despliegue** | 📄 Pendiente |
+Aplicativo web para el registro y gestión de pacientes, médicos y citas médicas, desarrollado con metodología Scrum como proyecto MVP funcional. Permite administrar pacientes, agendar citas, generar facturas y llevar un control organizado de la información hospitalaria desde un panel centralizado.
 
-> Cada guía termina con un *checkpoint*. Solo las marcadas como ✅ están implementadas en el repositorio.
+Resumen de Actividades Realizadas
 
-## Documentación del proyecto
 
-- [Roadmap completo](./docs/ROADMAP.md) — Planificación de 12 sprints con 46 User Stories
-- [User Stories para Jira](./docs/user-stories.md) — 46 HU con criterios de aceptación formato Given/When/Then
-- [Diseño del Módulo de Facturación](./docs/diseno-facturacion.md) — Modelo Maestro-Detalle ACID + UI profesional
-- [Referencia del Framework Django](./docs/referencias-django.md) — Companion teórico MVT, ORM, CBVs, POO
+Se creó un repositorio público en GitHub para el desarrollo del proyecto.
+Se configuró un entorno virtual de Python para administrar las dependencias.
+Se instaló Django y se generó la estructura inicial del proyecto (arquitectura MVT).
+Se configuró el archivo .env para gestionar las variables de entorno y la conexión a la base de datos.
+Se estableció la conexión entre Django y MySQL para el almacenamiento de la información.
+Se organizó el proyecto en distintas apps: core, security, catalog, customers, pacientes e invoicing.
+Se instalaron las dependencias del proyecto y se generó el archivo requirements.txt.
+Se ejecutaron las migraciones para crear las tablas de pacientes, médicos, citas y facturación en la base de datos.
+Se implementó el sistema de autenticación y roles (administrador y médico) mediante mixins de permisos.
+Se desarrolló el módulo de pacientes, con relación entre los modelos Cliente y Paciente.
+Se construyó el dashboard con estadísticas, corrigiendo un problema de zona horaria en las consultas a MySQL.
+Se implementó el módulo de facturación, con validaciones para evitar el registro de facturas duplicadas.
+Se generaron reportes en PDF a partir de la información registrada.
+Se verificó el funcionamiento de la aplicación ejecutando el servidor local con python manage.py runserver.
+Se realizaron pruebas para validar la conexión con la base de datos y el correcto funcionamiento de cada módulo.
+Finalmente, se registraron los cambios mediante commits y se publicaron en GitHub.
 
-## Caso de Estudio — Sistema de Facturación
 
-Aplica **Análisis OO → SOLID → UML → DER → Django → Transacciones ACID** sobre un caso Maestro-Detalle real.
+Tecnologías Utilizadas
 
-| Parte | Contenido | Duración |
-|---|---|---|
-| [Análisis y Diseño OO](./docs/caso-estudio-facturacion-analisis.md) | Análisis de dominio, 5 clases, 8 reglas de negocio, SOLID, UML, ER | 1 – 1.5 h |
-| [Implementación Django](./docs/caso-estudio-facturacion-implementacion.md) | Modelos, servicios transaccionales, ViewSets, API, pruebas | 1.5 – 2 h |
 
-## Requisitos
+Backend: Python, Django 6
+Base de datos: MySQL
+Frontend: HTML5, CSS3, JavaScript, Bootstrap 5
+Arquitectura: MVT (Model-View-Template)
+Control de versiones: Git y GitHub
+Herramientas: Visual Studio Code, StarUML
+Captura de Ejecución
+<img width="1882" height="970" alt="image" src="https://github.com/user-attachments/assets/a8222fe0-2375-4c8d-bbe5-69517fc0096b" />
 
-- Windows 10/11 con PowerShell 5.1+
-- Python 3.12 (`python --version`)
-- MySQL 8 / MariaDB 10
-- Git, Visual Studio Code (extensiones: *Python*, *Pylance*, *PlantUML*)
-
-> ¿Falta alguna herramienta? La guía 01 incluye los comandos `winget` para instalar todo lo necesario en Windows.
