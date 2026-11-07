@@ -14,7 +14,7 @@ class DashboardView(TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        hoy = timezone.now().date()
+        hoy = timezone.localdate()
         inicio_mes = hoy.replace(day=1)
 
         # --- Estadísticas hospitalarias ---

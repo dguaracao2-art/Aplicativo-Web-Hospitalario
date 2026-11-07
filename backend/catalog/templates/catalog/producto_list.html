@@ -11,6 +11,11 @@
       <option value="">Todas las categorías</option>
       {% for c in categorias %}<option value="{{ c.pk }}" {% if request.GET.categoria == c.pk|stringformat:'s' %}selected{% endif %}>{{ c.nombre }}</option>{% endfor %}
     </select>
+    <select name="estado" class="form-select form-select-sm" style="width:auto" onchange="this.form.submit()">
+      <option value="">Solo activos</option>
+      <option value="inactivos" {% if estado_filtro == 'inactivos' %}selected{% endif %}>Solo inactivos</option>
+      <option value="todos" {% if estado_filtro == 'todos' %}selected{% endif %}>Todos</option>
+    </select>
     <button class="btn btn-sm btn-outline-primary"><i class="bi bi-search"></i></button>
   </form>
   <a href="{% url 'catalog:producto_create' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Nuevo Producto</a>
@@ -22,9 +27,6 @@
       <tr><th>Código</th><th>Nombre</th><th>Precio</th><th>Stock</th><th>Categoría</th><th>Estado</th><th></th></tr>
     </thead>
     <tbody>
-      <tr class="skeleton-row d-none" id="loadingRows">
-        <td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-      </tr>
       {% for p in producto_list %}
       <tr>
         <td class="small">{{ p.codigo }}</td>
@@ -46,10 +48,14 @@
           <form method="post" action="{% url 'catalog:producto_deactivate' p.pk %}" class="d-inline">
             {% csrf_token %}<button class="btn btn-sm btn-outline-danger" onclick="return confirm('Desactivar {{ p.nombre }}?')"><i class="bi bi-x-circle"></i></button>
           </form>
+          {% else %}
+          <form method="post" action="{% url 'catalog:producto_activate' p.pk %}" class="d-inline">
+            {% csrf_token %}<button class="btn btn-sm btn-outline-success" title="Reactivar"><i class="bi bi-arrow-counterclockwise"></i></button>
+          </form>
           {% endif %}
         </td>
       </tr>
-      {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">No hay productos.</td></tr>
+      {% empty %}<tr><td colspan="7" class="text-center text-muted py-4">No hay productos con ese filtro.</td></tr>
       {% endfor %}
     </tbody>
   </table>

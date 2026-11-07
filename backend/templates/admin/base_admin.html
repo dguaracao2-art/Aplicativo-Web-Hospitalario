@@ -37,17 +37,13 @@
         {% for module in menu_modules %}
           {% if module|has_access:request.user %}
           <div class="sidebar-module">
-            <div class="module-header" data-target="ch-{{ module.id }}">
-              <i class="bi {{ module.icon }} module-icon"></i>
-              <span class="module-name">{{ module.name }}</span>
               {% with children=module|accessible_children:request.user %}
-                {% if children %}
-                  <i class="bi bi-chevron-down module-chevron"></i>
-                {% endif %}
-              {% endwith %}
-            </div>
-            {% with children=module|accessible_children:request.user %}
               {% if children %}
+              <div class="module-header" data-target="ch-{{ module.id }}">
+                <i class="bi {{ module.icon }} module-icon"></i>
+                <span class="module-name">{{ module.name }}</span>
+                <i class="bi bi-chevron-down module-chevron"></i>
+              </div>
               <div class="module-children" id="ch-{{ module.id }}">
                 {% for child in children %}
                   {% if child.url_name %}
@@ -61,6 +57,16 @@
                   </span>
                   {% endif %}
                 {% endfor %}
+              </div>
+              {% elif module.url_name %}
+              <a href="{% url module.url_name %}" class="module-header" style="text-decoration:none">
+                <i class="bi {{ module.icon }} module-icon"></i>
+                <span class="module-name">{{ module.name }}</span>
+              </a>
+              {% else %}
+              <div class="module-header">
+                <i class="bi {{ module.icon }} module-icon"></i>
+                <span class="module-name">{{ module.name }}</span>
               </div>
               {% endif %}
             {% endwith %}

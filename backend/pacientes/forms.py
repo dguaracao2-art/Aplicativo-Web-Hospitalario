@@ -166,7 +166,9 @@ class CitaForm(forms.ModelForm):
         # El modelo ya tiene una restricción única (médico, fecha, hora). Sin esta
         # comprobación, chocar con ella produce un error 500 en lugar de un aviso.
         if medico and fecha and hora:
-            ocupadas = Cita.objects.filter(medico=medico, fecha=fecha, hora=hora)
+            ocupadas = Cita.objects.filter(
+            medico=medico, fecha=fecha, hora=hora
+            ).exclude(estado="CAN")
 
             if self.instance.pk:
                 ocupadas = ocupadas.exclude(pk=self.instance.pk)

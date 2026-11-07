@@ -10,6 +10,7 @@ POO-4TO-CURSO-DJANGO-POSTGRES-REACT, ajusta el nombre de la app
 ("pacientes") según tu estructura real (backend/apps/...).
 """
 
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -115,6 +116,30 @@ class Cita(models.Model):
                 fields=["medico", "fecha", "hora"], name="unica_cita_medico_horario"
             )
         ]
+    def clean(self):
+        """Impide dos citas activas del mismo médico en la misma fecha y hora.
 
+        Reemplaza a la restricción de base de datos anterior, que no distinguía
+        entre citas activas y canceladas: al cancelar una cita, su horario
+        quedaba bloqueado para siempre. En MySQL no se puede expresar esa
+        condición en la base, porque no soporta índices condicionales.
+        """
+        if not (self.medico_id and self.fecha and self.hora):
+            return
+
+        if self.estado == "CAN":
+            return
+
+        choque = Cita.objects.filter(
+            medico_id=self.medico_id, fecha=self.fecha, hora=self.hora
+        ).exclude(estado="CAN")
+
+        if self.pk:
+            choque = choque.exclude(pk=self.pk)
+
+        if choque.exists():
+            raise ValidationError(
+                {"hora": "Este médico ya tiene una cita activa en esa fecha y hora."}
+            )     
     def __str__(self):
         return f"{self.paciente} con {self.medico} el {self.fecha} {self.hora}"

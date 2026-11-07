@@ -24,7 +24,7 @@
         <td><div class="summary-card card-primary"><div class="label">Facturas Emitidas</div><div class="value">{{ resumen.cantidad|default:0 }}</div></div></td>
         <td><div class="summary-card card-success"><div class="label">Subtotal</div><div class="value">${{ resumen.subtotal|default:0|floatformat:2 }}</div></div></td>
         <td><div class="summary-card card-warning"><div class="label">IVA Total</div><div class="value">${{ resumen.iva|default:0|floatformat:2 }}</div></div></td>
-        <td><div class="summary-card card-danger"><div class="label">Total Ventas</div><div class="value">${{ resumen.total|default:0|floatformat:2 }}</div></div></td>
+        <td><div class="summary-card card-danger"><div class="label">Total Ingresos</div><div class="value">${{ resumen.total|default:0|floatformat:2 }}</div></div></td>
       </tr>
     </table>
   </div>
@@ -96,7 +96,7 @@
     <div class="line">Facturas: {{ facturas.count }} | Activas: {{ resumen.cantidad|default:0 }} | Anuladas: {{ anuladas }}</div>
     <div class="line">Subtotal: ${{ resumen.subtotal|default:0|floatformat:2 }}</div>
     <div class="line">IVA 15%: ${{ resumen.iva|default:0|floatformat:2 }}</div>
-    <div class="line total">TOTAL VENTAS DEL DIA: ${{ resumen.total|default:0|floatformat:2 }}</div>
+    <div class="line total">TOTAL INGRESOS DEL DIA: ${{ resumen.total|default:0|floatformat:2 }}</div>
   </div>
 
   <div class="report-footer">

@@ -9,6 +9,21 @@ from .forms import CategoriaForm, ProductoForm
 from .models import Categoria, Producto
 
 
+def filtrar_por_estado(queryset, estado):
+    """
+    Filtra por estado según el selector de la barra superior.
+
+    Por defecto solo muestra los activos: los registros dados de baja no
+    desaparecen de la base (las facturas emitidas los siguen necesitando),
+    pero tampoco estorban en el día a día.
+    """
+    if estado == 'inactivos':
+        return queryset.filter(is_active=False)
+    if estado == 'todos':
+        return queryset
+    return queryset.filter(is_active=True)
+
+
 class CategoriaListView(PermissionRequiredMixin, ListView):
     permission_required = 'catalog.view_categoria'
     model = Categoria
@@ -42,6 +57,11 @@ class CategoriaUpdateView(PermissionRequiredMixin, UpdateView):
     template_name = 'catalog/categoria_form.html'
     success_url = reverse_lazy('catalog:categoria_list')
 
+    def get_queryset(self):
+        # La lista muestra también las inactivas, así que deben poder abrirse.
+        # Con el manager por defecto esto devolvía 404.
+        return Categoria.all_objects.all()
+
     def form_valid(self, form):
         messages.success(self.request, 'Categoría actualizada correctamente.')
         return super().form_valid(form)
@@ -60,6 +80,16 @@ class CategoriaDeactivateView(PermissionRequiredMixin, View):
         return redirect('catalog:categoria_list')
 
 
+class CategoriaActivateView(PermissionRequiredMixin, View):
+    permission_required = 'catalog.change_categoria'
+
+    def post(self, request, pk):
+        cat = Categoria.all_objects.get(pk=pk)
+        cat.restore()
+        messages.success(request, f'Categoría "{cat.nombre}" reactivada.')
+        return redirect('catalog:categoria_list')
+
+
 class ProductoListView(PermissionRequiredMixin, ListView):
     permission_required = 'catalog.view_producto'
     model = Producto
@@ -74,7 +104,16 @@ class ProductoListView(PermissionRequiredMixin, ListView):
             qs = qs.filter(Q(nombre__icontains=q) | Q(codigo__icontains=q))
         if cat:
             qs = qs.filter(categoria_id=cat)
+        qs = filtrar_por_estado(qs, self.request.GET.get('estado', ''))
         return qs.order_by('nombre')
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        # El filtro de categorías del template necesita esta lista; sin ella
+        # el desplegable salía vacío.
+        ctx['categorias'] = Categoria.objects.order_by('nombre')
+        ctx['estado_filtro'] = self.request.GET.get('estado', '')
+        return ctx
 
 
 class ProductoCreateView(PermissionRequiredMixin, CreateView):
@@ -96,6 +135,11 @@ class ProductoUpdateView(PermissionRequiredMixin, UpdateView):
     template_name = 'catalog/producto_form.html'
     success_url = reverse_lazy('catalog:producto_list')
 
+    def get_queryset(self):
+        # La lista muestra también los inactivos, así que deben poder abrirse.
+        # Con el manager por defecto esto devolvía 404.
+        return Producto.all_objects.select_related('categoria').all()
+
     def form_valid(self, form):
         messages.success(self.request, 'Producto actualizado correctamente.')
         return super().form_valid(form)
@@ -108,4 +152,14 @@ class ProductoDeactivateView(PermissionRequiredMixin, View):
         prod = Producto.all_objects.get(pk=pk)
         prod.soft_delete()
         messages.success(request, f'Producto "{prod.nombre}" desactivado.')
+        return redirect('catalog:producto_list')
+
+
+class ProductoActivateView(PermissionRequiredMixin, View):
+    permission_required = 'catalog.change_producto'
+
+    def post(self, request, pk):
+        prod = Producto.all_objects.get(pk=pk)
+        prod.restore()
+        messages.success(request, f'Producto "{prod.nombre}" reactivado.')
         return redirect('catalog:producto_list')
