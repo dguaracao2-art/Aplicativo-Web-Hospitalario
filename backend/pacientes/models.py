@@ -101,6 +101,8 @@ class Cita(models.Model):
     motivo = models.CharField(max_length=200, blank=True)
     estado = models.CharField(max_length=3, choices=ESTADO_CHOICES, default="PRO")
     fecha_registro = models.DateTimeField(auto_now_add=True)
+    recordatorio_enviado = models.BooleanField('Recordatorio enviado', default=False)
+    recordatorio_fecha = models.DateTimeField('Fecha del recordatorio', null=True, blank=True)
 
     class Meta:
         db_table = "cita"

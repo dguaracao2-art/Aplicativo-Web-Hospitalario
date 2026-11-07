@@ -1,7 +1,12 @@
+from datetime import timedelta
+
 from django.contrib import messages
 from django.db.models import Q
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
+from django.utils import timezone
+from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from security.mixins import RolRequeridoMixin
@@ -244,3 +249,48 @@ class MedicoDeleteView(RolRequeridoMixin, DeleteView):
         medico.save()
         messages.success(self.request, "Médico desactivado correctamente.")
         return HttpResponseRedirect(self.get_success_url())
+
+class RecordatoriosView(RolRequeridoMixin, ListView):
+    """Citas próximas que todavía no se le han recordado al paciente."""
+
+    roles_permitidos = [Rol.ADMINISTRADOR, Rol.RECEPCIONISTA]
+    model = Cita
+    template_name = "pacientes/recordatorios.html"
+    context_object_name = "citas"
+
+    DIAS_ANTICIPACION = 2
+
+    def get_queryset(self):
+        hoy = timezone.localdate()
+        limite = hoy + timedelta(days=self.DIAS_ANTICIPACION)
+        return (
+            Cita.objects.filter(estado="PRO", fecha__gte=hoy, fecha__lte=limite)
+            .select_related("paciente", "medico")
+            .order_by("fecha", "hora")
+        )
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["pendientes"] = sum(
+            1 for c in context["citas"] if not c.recordatorio_enviado
+        )
+        context["dias"] = self.DIAS_ANTICIPACION
+        return context
+
+
+class MarcarRecordatorioView(RolRequeridoMixin, View):
+    """Deja constancia de que al paciente ya se le recordó su cita."""
+
+    roles_permitidos = [Rol.ADMINISTRADOR, Rol.RECEPCIONISTA]
+
+    def post(self, request, cita_id):
+        cita = get_object_or_404(Cita, pk=cita_id)
+        cita.recordatorio_enviado = True
+        cita.recordatorio_fecha = timezone.now()
+        cita.save(update_fields=["recordatorio_enviado", "recordatorio_fecha"])
+        messages.success(
+            request,
+            f"Recordatorio registrado para {cita.paciente.nombres} "
+            f"{cita.paciente.apellidos}.",
+        )
+        return HttpResponseRedirect(reverse_lazy("pacientes:recordatorios"))

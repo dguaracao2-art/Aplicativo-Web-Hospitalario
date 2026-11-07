@@ -1,0 +1,69 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Recordatorios{% endblock %}
+{% block page_title %}Recordatorios de Citas{% endblock %}
+
+{% block content %}
+<div class="alert alert-info d-flex align-items-center gap-2">
+  <i class="bi bi-telephone"></i>
+  <div>
+    Citas programadas para los próximos {{ dias }} días.
+    {% if pendientes %}
+      Quedan <strong>{{ pendientes }}</strong> por recordar.
+    {% else %}
+      No queda ninguna por recordar.
+    {% endif %}
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <table class="table table-hover align-middle mb-0">
+    <thead class="table-light">
+      <tr>
+        <th>Fecha</th><th>Hora</th><th>Paciente</th><th>Teléfono</th>
+        <th>Médico</th><th>Recordatorio</th><th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in citas %}
+      <tr>
+        <td class="small">{{ c.fecha|date:'d/m/Y' }}</td>
+        <td class="small">{{ c.hora|time:'H:i' }}</td>
+        <td>{{ c.paciente.nombres }} {{ c.paciente.apellidos }}</td>
+        <td class="small">
+          {% if c.paciente.telefono %}
+            {{ c.paciente.telefono }}
+          {% else %}
+            <span class="text-danger">sin teléfono</span>
+          {% endif %}
+        </td>
+        <td class="small">Dr(a). {{ c.medico.apellidos }}</td>
+        <td>
+          {% if c.recordatorio_enviado %}
+            <span class="badge bg-success">Recordado</span>
+            <div class="small text-muted">{{ c.recordatorio_fecha|date:'d/m H:i' }}</div>
+          {% else %}
+            <span class="badge bg-warning text-dark">Pendiente</span>
+          {% endif %}
+        </td>
+        <td class="text-end">
+          {% if not c.recordatorio_enviado %}
+          <form method="post" action="{% url 'pacientes:citas_recordar' c.cita_id %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-success">
+              <i class="bi bi-check2"></i> Marcar recordado
+            </button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" class="text-center text-muted py-4">
+          No hay citas programadas en los próximos días.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

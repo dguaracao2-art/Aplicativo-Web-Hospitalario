@@ -16,7 +16,9 @@ urlpatterns = [
     path("citas/<int:cita_id>/", views.CitaDetailView.as_view(), name="citas_detalle"),
     path("citas/<int:cita_id>/editar/", views.CitaUpdateView.as_view(), name="citas_editar"),
     path("citas/<int:cita_id>/cancelar/", views.CitaCancelView.as_view(), name="citas_cancelar"),
-
+    path("citas/recordatorios/", views.RecordatoriosView.as_view(), name="recordatorios"),
+    path("citas/<int:cita_id>/recordar/", views.MarcarRecordatorioView.as_view(), name="citas_recordar"),
+    
     # Médicos
     path("medicos/", views.MedicoListView.as_view(), name="medicos_listar"),
     path("medicos/nuevo/", views.MedicoCreateView.as_view(), name="medicos_crear"),

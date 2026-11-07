@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.views import View
 from django.views.generic import TemplateView
-from xhtml2pdf import pisa
+from xhtml2pdf import pisa  # type: ignore
 from django.conf import settings
 from .models import Factura
 
@@ -68,7 +68,7 @@ class ReportsIndexView(LoginRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx['today'] = timezone.now()
+        ctx['today'] = timezone.localdate()
         return ctx
 
 
@@ -77,7 +77,7 @@ class DailyClosePDFView(LoginRequiredMixin, PermissionRequiredMixin, View, PDFMi
     pdf_template = 'invoicing/reports/daily_close_pdf.html'
 
     def get(self, request):
-        hoy = timezone.now().date()
+        hoy = timezone.localdate()
         inicio = timezone.make_aware(datetime.combine(hoy, datetime.min.time()))
         fin = inicio + timedelta(days=1)
         self.pdf_filename = f'cierre_diario_{hoy.strftime("%Y%m%d")}.pdf'
@@ -112,7 +112,7 @@ class InvoiceListPDFView(LoginRequiredMixin, PermissionRequiredMixin, View, PDFM
     def get(self, request):
         desde = request.GET.get('desde')
         hasta = request.GET.get('hasta')
-        hoy = timezone.now().date()
+        hoy = timezone.localdate()
 
         if desde:
             inicio = timezone.make_aware(datetime.combine(
@@ -136,8 +136,8 @@ class InvoiceListPDFView(LoginRequiredMixin, PermissionRequiredMixin, View, PDFM
             iva=Sum('iva_total'), cantidad=Count('id'),
         )
 
-        self.pdf_filename = f'facturas_{inicio.strftime("%Y%m%d")}_al_{fin.strftime("%Y%m%d")}.pdf'
-
+        ultimo_dia = fin - timedelta(days=1)
+        self.pdf_filename = f'facturas_{inicio.strftime("%Y%m%d")}_al_{ultimo_dia.strftime("%Y%m%d")}.pdf'
         return self.render_pdf({
             'facturas': facturas,
             'activas': activas,
