@@ -1,0 +1,17 @@
+# Editor
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Entorno
+.env
+
+# Sistema operativo
+Thumbs.db
+.DS_Store
+desktop.ini
