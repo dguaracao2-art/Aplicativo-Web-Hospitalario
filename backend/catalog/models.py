@@ -23,6 +23,11 @@ class Producto(BaseModel):
     iva_porcentaje = models.DecimalField('IVA %', max_digits=4, decimal_places=2, default=15.00)
     stock = models.IntegerField('Stock', default=0)
     stock_minimo = models.IntegerField('Stock mínimo', default=0, help_text='Alertar cuando el stock baje de esta cantidad')
+    es_servicio = models.BooleanField(
+        'Es un servicio',
+        default=False,
+        help_text='Una consulta o procedimiento no tiene inventario: no descuenta stock al facturarse.',
+    )
     categoria = models.ForeignKey(Categoria, on_delete=models.PROTECT, related_name='productos', verbose_name='Categoría')
     imagen = models.ImageField('Imagen', upload_to='productos/', blank=True, null=True)
 

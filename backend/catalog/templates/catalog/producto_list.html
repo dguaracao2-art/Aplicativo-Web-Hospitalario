@@ -36,9 +36,13 @@
         </td>
         <td>${{ p.precio|floatformat:2 }}</td>
         <td>
-          <span class="badge {% if p.stock == 0 %}bg-danger{% elif p.stock < p.stock_minimo %}bg-warning text-dark{% else %}bg-success{% endif %}">
-            {{ p.stock }}
-          </span>
+          {% if p.es_servicio %}
+            <span class="badge bg-info text-dark">Servicio</span>
+          {% else %}
+            <span class="badge {% if p.stock == 0 %}bg-danger{% elif p.stock < p.stock_minimo %}bg-warning text-dark{% else %}bg-success{% endif %}">
+              {{ p.stock }}
+            </span>
+          {% endif %}
         </td>
         <td class="small">{{ p.categoria.nombre }}</td>
         <td>{% if p.is_active %}<span class="badge bg-success">Activo</span>{% else %}<span class="badge bg-secondary">Inactivo</span>{% endif %}</td>

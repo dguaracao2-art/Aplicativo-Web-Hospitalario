@@ -22,7 +22,7 @@ class FacturaService:
             raise ValidationError('Debe agregar al menos un producto.')
 
         # Número secuencial atómico (sin race condition)
-        year = timezone.now().year
+        year = timezone.localdate().year
         seq, _ = SecuenciaFactura.objects.select_for_update().get_or_create(year=year)
         seq.correlativo = F('correlativo') + 1
         seq.save()
@@ -39,7 +39,7 @@ class FacturaService:
             if item['cantidad'] <= 0:
                 raise ValidationError(f'Cantidad inválida para {prod.nombre}')
 
-            if prod.stock < item['cantidad']:
+            if not prod.es_servicio and prod.stock < item['cantidad']:
                 raise ValidationError(f'Stock insuficiente para {prod.nombre} ( disponible: {prod.stock} )')
 
             # Calcular línea
@@ -64,12 +64,14 @@ class FacturaService:
             subtotal_factura += subt
             iva_factura += iva_v
 
-            # 4. Descontar stock (atómico con F())
-            rows = Producto.objects.filter(pk=prod.pk, stock__gte=item['cantidad']).update(
-                stock=F('stock') - item['cantidad']
-            )
-            if rows == 0:
-                raise ValidationError(f'Error al descontar stock de {prod.nombre} (posible race condition)')
+            # 4. Descontar stock (atómico con F()). Los servicios no tienen
+            # inventario: una consulta no se agota ni se repone.
+            if not prod.es_servicio:
+                rows = Producto.objects.filter(pk=prod.pk, stock__gte=item['cantidad']).update(
+                    stock=F('stock') - item['cantidad']
+                )
+                if rows == 0:
+                    raise ValidationError(f'Error al descontar stock de {prod.nombre} (posible race condition)')
 
         # 5. Crear factura
         factura = Factura.objects.create(
@@ -98,9 +100,11 @@ class FacturaService:
         if not factura.is_active:
             raise ValidationError('La factura ya está anulada.')
 
-        # Restaurar stock por cada detalle
-        for det in factura.detalles.all():
-            from catalog.models import Producto
+        # Restaurar stock por cada detalle, salvo los servicios, que nunca
+        # lo descontaron.
+        for det in factura.detalles.select_related('producto'):
+            if det.producto.es_servicio:
+                continue
             Producto.objects.filter(pk=det.producto_id).update(
                 stock=F('stock') + det.cantidad
             )
