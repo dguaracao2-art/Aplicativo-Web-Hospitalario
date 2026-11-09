@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    @page { size: A4; margin: 2cm; }
+    body { font-family: Helvetica, Arial, sans-serif; font-size: 11pt; color: #1a1a1a; }
+    h1 { font-size: 15pt; margin: 0 0 2px 0; }
+    .sub { font-size: 9pt; color: #555; }
+    .titulo { font-size: 13pt; font-weight: bold; margin: 18px 0 10px 0;
+              border-bottom: 2px solid #1a1a1a; padding-bottom: 4px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    th { background: #eeeeee; border: 1px solid #999; padding: 6px; font-size: 9pt; text-align: left; }
+    td { border: 1px solid #999; padding: 6px; font-size: 10pt; }
+    .datos td { border: none; padding: 3px 0; font-size: 10pt; }
+    .etq { color: #555; width: 28%; }
+    .firma { margin-top: 60px; text-align: center; font-size: 10pt; }
+    .linea { border-top: 1px solid #1a1a1a; width: 60%; margin: 0 auto 4px auto; }
+    .pie { margin-top: 24px; font-size: 8pt; color: #777; text-align: center; }
+  </style>
+</head>
+<body>
+  <h1>{{ empresa.nombre }}</h1>
+  <div class="sub">RUC: {{ empresa.ruc }} | {{ empresa.direccion }} | Tel: {{ empresa.telefono }}</div>
+
+  <div class="titulo">RECETA MÉDICA N° {{ receta.receta_id }}</div>
+
+  <table class="datos">
+    <tr>
+      <td class="etq">Paciente:</td>
+      <td>{{ receta.paciente.nombres }} {{ receta.paciente.apellidos }}</td>
+    </tr>
+    <tr>
+      <td class="etq">Cédula:</td>
+      <td>{{ receta.paciente.cedula }}</td>
+    </tr>
+    <tr>
+      <td class="etq">Fecha de emisión:</td>
+      <td>{{ receta.fecha|date:'d/m/Y' }}</td>
+    </tr>
+    <tr>
+      <td class="etq">Diagnóstico:</td>
+      <td>{{ receta.diagnostico }}</td>
+    </tr>
+  </table>
+
+  <table>
+    <tr>
+      <th style="width:36%">Medicamento</th>
+      <th style="width:18%">Dosis</th>
+      <th style="width:26%">Frecuencia</th>
+      <th style="width:20%">Duración</th>
+    </tr>
+    {% for d in detalles %}
+    <tr>
+      <td>{{ d.medicamento }}</td>
+      <td>{{ d.dosis }}</td>
+      <td>{{ d.frecuencia }}</td>
+      <td>{{ d.duracion }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+
+  {% if receta.indicaciones %}
+  <p style="margin-top:14px"><strong>Indicaciones:</strong> {{ receta.indicaciones }}</p>
+  {% endif %}
+
+  <div class="firma">
+    <div class="linea"></div>
+    Dr(a). {{ receta.medico.nombres }} {{ receta.medico.apellidos }}<br>
+    <span class="sub">{{ receta.medico.get_especialidad_display }} | CI: {{ receta.medico.cedula }}</span>
+  </div>
+
+  <div class="pie">Documento generado por el sistema de gestión hospitalaria.</div>
+</body>
+</html>

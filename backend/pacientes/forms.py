@@ -2,7 +2,7 @@ from datetime import date, time
 
 from django import forms
 
-from .models import Paciente, Medico, Cita
+from .models import Paciente, Medico, Cita, Receta, DetalleReceta
 
 
 # Horario de atención del hospital
@@ -180,3 +180,49 @@ class CitaForm(forms.ModelForm):
                 )
 
         return datos
+
+
+class RecetaForm(forms.ModelForm):
+    class Meta:
+        model = Receta
+        fields = ['paciente', 'medico', 'cita', 'fecha', 'diagnostico', 'indicaciones']
+        widgets = {
+            'paciente': forms.Select(attrs={'class': 'form-select'}),
+            'medico': forms.Select(attrs={'class': 'form-select'}),
+            'cita': forms.Select(attrs={'class': 'form-select'}),
+            'fecha': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'diagnostico': forms.TextInput(attrs={'class': 'form-control'}),
+            'indicaciones': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['paciente'].queryset = Paciente.objects.filter(estado=True)
+        self.fields['medico'].queryset = Medico.objects.filter(estado=True)
+        self.fields['cita'].queryset = Cita.objects.exclude(estado='CAN').select_related('paciente')
+        self.fields['cita'].required = False
+        self.fields['cita'].empty_label = '— Sin cita asociada —'
+
+        if not self.instance.pk:
+            self.fields['fecha'].initial = date.today()
+
+    def clean_fecha(self):
+        fecha = self.cleaned_data['fecha']
+        if fecha > date.today():
+            raise forms.ValidationError('No se puede emitir una receta con fecha futura.')
+        return fecha
+
+
+DetalleRecetaFormSet = forms.inlineformset_factory(
+    Receta,
+    DetalleReceta,
+    fields=['medicamento', 'dosis', 'frecuencia', 'duracion'],
+    widgets={
+        'medicamento': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Paracetamol'}),
+        'dosis': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '500 mg'}),
+        'frecuencia': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'cada 8 horas'}),
+        'duracion': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '7 días'}),
+    },
+    extra=3,
+    can_delete=True,
+)

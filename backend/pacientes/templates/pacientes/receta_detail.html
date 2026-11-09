@@ -1,0 +1,73 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Receta #{{ receta.receta_id }}{% endblock %}
+{% block page_title %}Receta #{{ receta.receta_id }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-end gap-2 mb-3">
+  <a href="{% url 'pacientes:recetas_pdf' receta.receta_id %}" class="btn btn-danger btn-sm">
+    <i class="bi bi-file-pdf"></i> Imprimir
+  </a>
+  {% if receta.estado %}
+  <form method="post" action="{% url 'pacientes:recetas_anular' receta.receta_id %}">
+    {% csrf_token %}
+    <button class="btn btn-outline-danger btn-sm" onclick="return confirm('¿Anular esta receta?')">
+      <i class="bi bi-x-circle"></i> Anular
+    </button>
+  </form>
+  {% endif %}
+  <a href="{% url 'pacientes:recetas_listar' %}" class="btn btn-outline-secondary btn-sm">Volver</a>
+</div>
+
+{% if not receta.estado %}
+<div class="alert alert-secondary"><i class="bi bi-exclamation-triangle"></i> Esta receta fue anulada.</div>
+{% endif %}
+
+<div class="card border-0 shadow-sm mb-3">
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="small text-muted">Paciente</div>
+        <div class="fw-semibold">{{ receta.paciente.nombres }} {{ receta.paciente.apellidos }}</div>
+        <div class="small text-muted">CI: {{ receta.paciente.cedula }}</div>
+      </div>
+      <div class="col-md-4">
+        <div class="small text-muted">Médico</div>
+        <div class="fw-semibold">Dr(a). {{ receta.medico.nombres }} {{ receta.medico.apellidos }}</div>
+        <div class="small text-muted">{{ receta.medico.get_especialidad_display }}</div>
+      </div>
+      <div class="col-md-4">
+        <div class="small text-muted">Fecha de emisión</div>
+        <div class="fw-semibold">{{ receta.fecha|date:'d/m/Y' }}</div>
+      </div>
+      <div class="col-12">
+        <div class="small text-muted">Diagnóstico</div>
+        <div class="fw-semibold">{{ receta.diagnostico }}</div>
+      </div>
+      {% if receta.indicaciones %}
+      <div class="col-12">
+        <div class="small text-muted">Indicaciones generales</div>
+        <div>{{ receta.indicaciones|linebreaksbr }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <table class="table mb-0">
+    <thead class="table-light">
+      <tr><th>Medicamento</th><th>Dosis</th><th>Frecuencia</th><th>Duración</th></tr>
+    </thead>
+    <tbody>
+      {% for d in receta.detalles.all %}
+      <tr>
+        <td class="fw-semibold">{{ d.medicamento }}</td>
+        <td>{{ d.dosis }}</td>
+        <td>{{ d.frecuencia }}</td>
+        <td>{{ d.duracion }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

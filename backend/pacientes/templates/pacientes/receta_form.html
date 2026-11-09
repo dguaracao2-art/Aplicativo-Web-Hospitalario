@@ -1,0 +1,83 @@
+{% extends "admin/base_admin.html" %}
+{% block title %}Nueva Receta{% endblock %}
+{% block page_title %}Emitir Receta Médica{% endblock %}
+
+{% block content %}
+<form method="post" novalidate>
+  {% csrf_token %}
+
+  {% if form.non_field_errors %}
+    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+  {% endif %}
+
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+      <h6 class="fw-bold mb-3">Datos de la receta</h6>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Paciente</label>
+          {{ form.paciente }}
+          {% if form.paciente.errors %}<div class="text-danger small">{{ form.paciente.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Médico</label>
+          {{ form.medico }}
+          {% if form.medico.errors %}<div class="text-danger small">{{ form.medico.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Cita asociada <span class="text-muted small">(opcional)</span></label>
+          {{ form.cita }}
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Fecha</label>
+          {{ form.fecha }}
+          {% if form.fecha.errors %}<div class="text-danger small">{{ form.fecha.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="col-12">
+          <label class="form-label">Diagnóstico</label>
+          {{ form.diagnostico }}
+          {% if form.diagnostico.errors %}<div class="text-danger small">{{ form.diagnostico.errors.0 }}</div>{% endif %}
+        </div>
+        <div class="col-12">
+          <label class="form-label">Indicaciones generales</label>
+          {{ form.indicaciones }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm mb-3">
+    <div class="card-body">
+      <h6 class="fw-bold mb-3">Medicamentos</h6>
+      {{ detalles.management_form }}
+      <table class="table align-middle">
+        <thead class="table-light">
+          <tr>
+            <th style="width:34%">Medicamento</th>
+            <th style="width:18%">Dosis</th>
+            <th style="width:22%">Frecuencia</th>
+            <th style="width:18%">Duración</th>
+            <th style="width:8%">Quitar</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for f in detalles %}
+          <tr>
+            {{ f.id }}
+            <td>{{ f.medicamento }}</td>
+            <td>{{ f.dosis }}</td>
+            <td>{{ f.frecuencia }}</td>
+            <td>{{ f.duracion }}</td>
+            <td class="text-center">{% if f.instance.pk %}{{ f.DELETE }}{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <p class="small text-muted mb-0">Complete solo las filas que necesite. Deje en blanco las que sobren.</p>
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Emitir receta</button>
+  <a href="{% url 'pacientes:recetas_listar' %}" class="btn btn-outline-secondary">Cancelar</a>
+</form>
+{% endblock %}

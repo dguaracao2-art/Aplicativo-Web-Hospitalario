@@ -1,4 +1,7 @@
+from datetime import datetime, time, timedelta
+
 from django.db import models
+from django.utils import timezone
 from catalog.models import Producto
 from customers.models import Cliente
 import json
@@ -21,17 +24,35 @@ class InvoiceListView(PermissionRequiredMixin, ListView):
     paginate_by = 10
     template_name = 'invoicing/invoice_list.html'
 
+    @staticmethod
+    def _medianoche(texto):
+        """Convierte '2026-11-09' en la medianoche local de ese día."""
+        try:
+            dia = datetime.strptime(texto, '%Y-%m-%d').date()
+        except ValueError:
+            return None
+        return timezone.make_aware(datetime.combine(dia, time.min))
+
     def get_queryset(self):
         qs = Factura.all_objects.select_related('cliente', 'usuario').all()
         fdesde = self.request.GET.get('desde', '').strip()
         fhasta = self.request.GET.get('hasta', '').strip()
         cliente_id = self.request.GET.get('cliente', '').strip()
+
         if fdesde:
-            qs = qs.filter(fecha_emision__date__gte=fdesde)
+            inicio = self._medianoche(fdesde)
+            if inicio:
+                qs = qs.filter(fecha_emision__gte=inicio)
+
         if fhasta:
-            qs = qs.filter(fecha_emision__date__lte=fhasta)
+            fin = self._medianoche(fhasta)
+            if fin:
+                # El día "hasta" entra completo: se corta en la medianoche siguiente.
+                qs = qs.filter(fecha_emision__lt=fin + timedelta(days=1))
+
         if cliente_id:
             qs = qs.filter(cliente_id=cliente_id)
+
         return qs.order_by('-fecha_emision')
 
 

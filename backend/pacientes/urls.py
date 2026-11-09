@@ -13,16 +13,23 @@ urlpatterns = [
     # Citas
     path("citas/", views.CitaListView.as_view(), name="citas_listar"),
     path("citas/nueva/", views.CitaCreateView.as_view(), name="citas_crear"),
+    path("citas/recordatorios/", views.RecordatoriosView.as_view(), name="recordatorios"),
     path("citas/<int:cita_id>/", views.CitaDetailView.as_view(), name="citas_detalle"),
     path("citas/<int:cita_id>/editar/", views.CitaUpdateView.as_view(), name="citas_editar"),
     path("citas/<int:cita_id>/cancelar/", views.CitaCancelView.as_view(), name="citas_cancelar"),
-    path("citas/recordatorios/", views.RecordatoriosView.as_view(), name="recordatorios"),
     path("citas/<int:cita_id>/recordar/", views.MarcarRecordatorioView.as_view(), name="citas_recordar"),
-    
+
     # Médicos
     path("medicos/", views.MedicoListView.as_view(), name="medicos_listar"),
     path("medicos/nuevo/", views.MedicoCreateView.as_view(), name="medicos_crear"),
     path("medicos/<int:medico_id>/", views.MedicoDetailView.as_view(), name="medicos_detalle"),
     path("medicos/<int:medico_id>/editar/", views.MedicoUpdateView.as_view(), name="medicos_editar"),
     path("medicos/<int:medico_id>/eliminar/", views.MedicoDeleteView.as_view(), name="medicos_eliminar"),
+
+    # Recetas
+    path("recetas/", views.RecetaListView.as_view(), name="recetas_listar"),
+    path("recetas/nueva/", views.RecetaCreateView.as_view(), name="recetas_crear"),
+    path("recetas/<int:receta_id>/", views.RecetaDetailView.as_view(), name="recetas_detalle"),
+    path("recetas/<int:receta_id>/pdf/", views.RecetaPDFView.as_view(), name="recetas_pdf"),
+    path("recetas/<int:receta_id>/anular/", views.RecetaAnularView.as_view(), name="recetas_anular"),
 ]

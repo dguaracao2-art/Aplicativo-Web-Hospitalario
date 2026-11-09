@@ -1,18 +1,20 @@
 from datetime import timedelta
 
 from django.contrib import messages
+from django.db import transaction
 from django.db.models import Q
 from django.http import HttpResponseRedirect
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import View
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
+from invoicing.report_views import PDFMixin
 from security.mixins import RolRequeridoMixin
 from security.models import Rol
-from .forms import PacienteForm, CitaForm, MedicoForm
-from .models import Paciente, Cita, Medico
+from .forms import PacienteForm, CitaForm, MedicoForm, RecetaForm, DetalleRecetaFormSet
+from .models import Paciente, Cita, Medico, Receta
 
 
 class PacienteListView(RolRequeridoMixin, ListView):
@@ -294,3 +296,106 @@ class MarcarRecordatorioView(RolRequeridoMixin, View):
             f"{cita.paciente.apellidos}.",
         )
         return HttpResponseRedirect(reverse_lazy("pacientes:recordatorios"))
+
+
+
+class RecetaListView(RolRequeridoMixin, ListView):
+    """Recetas emitidas, de la más reciente a la más antigua."""
+
+    roles_permitidos = [Rol.ADMINISTRADOR, Rol.MEDICO, Rol.RECEPCIONISTA]
+    model = Receta
+    template_name = "pacientes/receta_list.html"
+    context_object_name = "recetas"
+    paginate_by = 10
+
+    def get_queryset(self):
+        qs = Receta.objects.select_related("paciente", "medico").all()
+        q = self.request.GET.get("q", "").strip()
+        if q:
+            qs = qs.filter(
+                Q(paciente__cedula__icontains=q)
+                | Q(paciente__apellidos__icontains=q)
+                | Q(diagnostico__icontains=q)
+            )
+        return qs
+
+
+class RecetaCreateView(RolRequeridoMixin, CreateView):
+    """Emite una receta con uno o varios medicamentos."""
+
+    roles_permitidos = [Rol.ADMINISTRADOR, Rol.MEDICO]
+    model = Receta
+    form_class = RecetaForm
+    template_name = "pacientes/receta_form.html"
+
+    def get_context_data(self, **kwargs):
+        contexto = super().get_context_data(**kwargs)
+        if self.request.POST:
+            contexto["detalles"] = DetalleRecetaFormSet(self.request.POST)
+        else:
+            contexto["detalles"] = DetalleRecetaFormSet()
+        return contexto
+
+    def form_valid(self, form):
+        detalles = self.get_context_data()["detalles"]
+
+        if not detalles.is_valid():
+            return self.form_invalid(form)
+
+        # Una receta sin medicamentos no tiene sentido clínico.
+        con_datos = [
+            f for f in detalles
+            if f.cleaned_data and not f.cleaned_data.get("DELETE")
+        ]
+        if not con_datos:
+            form.add_error(None, "Agregue al menos un medicamento a la receta.")
+            return self.form_invalid(form)
+
+        with transaction.atomic():
+            self.object = form.save()
+            detalles.instance = self.object
+            detalles.save()
+
+        messages.success(self.request, f"Receta #{self.object.receta_id} emitida correctamente.")
+        return redirect("pacientes:recetas_detalle", receta_id=self.object.receta_id)
+
+
+class RecetaDetailView(RolRequeridoMixin, DetailView):
+    roles_permitidos = [Rol.ADMINISTRADOR, Rol.MEDICO, Rol.RECEPCIONISTA]
+    model = Receta
+    template_name = "pacientes/receta_detail.html"
+    context_object_name = "receta"
+    pk_url_kwarg = "receta_id"
+
+    def get_queryset(self):
+        return Receta.objects.select_related("paciente", "medico", "cita")
+
+
+class RecetaPDFView(RolRequeridoMixin, PDFMixin, View):
+    """Genera la receta imprimible que se lleva el paciente."""
+
+    roles_permitidos = [Rol.ADMINISTRADOR, Rol.MEDICO, Rol.RECEPCIONISTA]
+    pdf_template = "pacientes/receta_pdf.html"
+
+    def get(self, request, receta_id):
+        receta = get_object_or_404(
+            Receta.objects.select_related("paciente", "medico"), pk=receta_id
+        )
+        self.pdf_filename = f"receta_{receta.receta_id}_{receta.paciente.cedula}.pdf"
+        return self.render_pdf({
+            "receta": receta,
+            "detalles": receta.detalles.all(),
+        })
+
+
+class RecetaAnularView(RolRequeridoMixin, View):
+    """Anula una receta sin borrarla: el historial clínico no se altera."""
+
+    roles_permitidos = [Rol.ADMINISTRADOR, Rol.MEDICO]
+
+    def post(self, request, receta_id):
+        receta = get_object_or_404(Receta, pk=receta_id)
+        receta.estado = False
+        receta.save(update_fields=["estado"])
+        messages.success(request, f"Receta #{receta.receta_id} anulada.")
+        return redirect("pacientes:recetas_listar")

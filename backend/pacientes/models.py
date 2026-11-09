@@ -143,3 +143,48 @@ class Cita(models.Model):
             )     
     def __str__(self):
         return f"{self.paciente} con {self.medico} el {self.fecha} {self.hora}"
+
+
+class Receta(models.Model):
+    """Receta médica emitida tras una consulta."""
+
+    receta_id = models.AutoField(primary_key=True)
+    cita = models.ForeignKey(
+        Cita, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name="recetas", verbose_name="Cita asociada",
+    )
+    paciente = models.ForeignKey(Paciente, on_delete=models.PROTECT, related_name="recetas")
+    medico = models.ForeignKey(Medico, on_delete=models.PROTECT, related_name="recetas")
+    fecha = models.DateField("Fecha de emisión")
+    diagnostico = models.CharField("Diagnóstico", max_length=300)
+    indicaciones = models.TextField("Indicaciones generales", blank=True)
+    estado = models.BooleanField(default=True)
+    fecha_registro = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "receta"
+        ordering = ["-fecha", "-receta_id"]
+        verbose_name = "Receta"
+        verbose_name_plural = "Recetas"
+
+    def __str__(self):
+        return f"Receta #{self.receta_id} - {self.paciente}"
+
+
+class DetalleReceta(models.Model):
+    """Cada medicamento recetado, con su posología."""
+
+    detalle_id = models.AutoField(primary_key=True)
+    receta = models.ForeignKey(Receta, on_delete=models.CASCADE, related_name="detalles")
+    medicamento = models.CharField("Medicamento", max_length=200)
+    dosis = models.CharField("Dosis", max_length=100, help_text="Ej: 500 mg")
+    frecuencia = models.CharField("Frecuencia", max_length=100, help_text="Ej: cada 8 horas")
+    duracion = models.CharField("Duración", max_length=100, help_text="Ej: 7 días")
+
+    class Meta:
+        db_table = "detalle_receta"
+        verbose_name = "Medicamento recetado"
+        verbose_name_plural = "Medicamentos recetados"
+
+    def __str__(self):
+        return f"{self.medicamento} {self.dosis}"
